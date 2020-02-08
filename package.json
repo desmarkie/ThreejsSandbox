@@ -1,6 +1,6 @@
 {
-	"name": "three_sandbox",
-	"description": "THREE.js Sandbox",
+	"name": "webgl_sandbox",
+	"description": "WebGL Sandbox",
 	"author": "Desmarkie",
 	"license": "ISC",
 	"repository": {
