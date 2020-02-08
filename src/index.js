@@ -63,10 +63,11 @@ function init()
 
 function handleResize( e )
 {
+	
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
-	console.log('resizing');
+
 }
 
 function handleMouseMove( e )
@@ -116,15 +117,12 @@ function createGeo()
 	quad = new THREE.Mesh( quadGeo, quadMaterial );
 	scene.add( quad );
 
-	window.q = quad;
-
 }
 
 function update()
 {
 
 	var time = performance.now() / 1000;
-	// /console.log(time);
 	quad.material.uniforms.time.value = time;
 	quad.material.uniforms.multi.value = ( mousePos.x / window.innerWidth ) * 150.0;
 
@@ -135,5 +133,3 @@ function update()
 }
 
 window.onload = init;
-
-
