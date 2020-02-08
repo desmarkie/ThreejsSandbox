@@ -1,0 +1,26 @@
+{
+	"name": "three_snadbox",
+	"description": "THREE.js Sandbox",
+	"engines": {
+		"node": ">=13.7.0"
+	},
+	"scripts": {
+		"build": "rollup -c",
+		"watch": "rollup -c -w"
+	},
+	"devDependencies": {
+		"@babel/core": "",
+		"@babel/preset-env": "",
+		"glslify": "",
+		"rollup": "",
+		"rollup-plugin-babel": "",
+		"@rollup/plugin-commonjs": "",
+		"@rollup/plugin-node-resolve": "",
+		"rollup-plugin-copy": "",
+		"rollup-plugin-generate-html-template": "",
+		"rollup-plugin-glslify": "",
+		"rollup-plugin-livereload": "",
+		"rollup-plugin-serve": ""
+	},
+	"dependencies": {}
+}
