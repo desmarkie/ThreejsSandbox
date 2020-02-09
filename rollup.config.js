@@ -27,11 +27,11 @@ export default {
 			exclude: 'node_modules/**'
 		}),
 		nodeResolve({
-			jsnext: true,
-			main: true
+			modulesOnly: true
 		}),
 		commonjs({
-			exclude: "node_modules/**"
+			exclude: "node_modules/**",
+			ignoreGlobal: true
 		}),
 		babel({
 			extensions: [".js"],

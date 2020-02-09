@@ -1,16 +1,18 @@
 import fsQuadVert from '../shaders/fullscreen_quad.vs';
 import fsQuadFrag from '../shaders/fullscreen_quad.fs';
 
+import MouseInput from 'mouseInput.js';
+
+
 export default class App
 {
 
 	constructor()
 	{
+
+		console.log( MouseInput );
 		
-		this.mousePos = {
-			x: 0,
-			y: 0
-		};
+		this.mouse = new MouseInput();
 
 		this.scene = new THREE.Scene();
 	
@@ -21,8 +23,6 @@ export default class App
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
 		document.body.appendChild( this.renderer.domElement );
 
-		document.onmousemove = this.handleMouseMove.bind( this );
-
 		this.createGeo();
 		this.createLights();
 
@@ -32,16 +32,7 @@ export default class App
 
 	}
 
-	handleMouseMove( evt )
-	{
-
-		this.mousePos.x = evt.pageX;
-		this.mousePos.y = evt.pageY;
-
-		this.quad.material.uniforms.mouse.value.x = this.mousePos.x;
-		this.quad.material.uniforms.mouse.value.y = this.mousePos.y;
-
-	}
+	
 
 	handleResize( evt )
 	{
@@ -50,8 +41,8 @@ export default class App
 		this.camera.aspect = window.innerWidth / window.innerHeight;
 		this.camera.updateProjectionMatrix();
 
-		this.quad.material.uniforms.resolution.value.x = window.innerWidth;
-		this.quad.material.uniforms.resolution.value.y = window.innerHeight;
+		this.quadMaterial.uniforms.resolution.value.x = window.innerWidth;
+		this.quadMaterial.uniforms.resolution.value.y = window.innerHeight;
 
 	}
 
@@ -107,8 +98,11 @@ export default class App
 	{
 
 		var time = performance.now() / 1000;
-		this.quad.material.uniforms.time.value = time;
-		this.quad.material.uniforms.multi.value = ( this.mousePos.x / window.innerWidth ) * 150.0;
+		this.quadMaterial.uniforms.time.value = time;
+		this.quadMaterial.uniforms.multi.value = ( this.mouse.x / window.innerWidth ) * 150.0;
+
+		this.quadMatrial.uniforms.mouse.value.x = this.mouse.x;
+		this.quadMatrial.uniforms.mouse.value.y = this.mouse.y;
 
 		this.renderer.render( this.scene, this.camera );
 
