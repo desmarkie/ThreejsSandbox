@@ -26,7 +26,8 @@
 		"rollup-plugin-generate-html-template": "",
 		"rollup-plugin-glslify": "",
 		"rollup-plugin-livereload": "",
-		"rollup-plugin-serve": ""
+		"rollup-plugin-serve": "",
+		"three": ""
 	},
 	"dependencies": {}
 }

@@ -1,7 +1,9 @@
-import fsQuadVert from '../shaders/fullscreen_quad.vs';
-import fsQuadFrag from '../shaders/fullscreen_quad.fs';
+import * as THREE from 'three';
 
 import MouseInput from './mouseInput.js';
+
+import fsQuadVert from '../shaders/fullscreen_quad.vs';
+import fsQuadFrag from '../shaders/fullscreen_quad.fs';
 
 
 export default class App
@@ -10,9 +12,7 @@ export default class App
 	constructor()
 	{
 
-		console.log( MouseInput );
-		
-		this.mouse = new MouseInput();
+		this.mouse = new MouseInput( window.innerWidth / 2, window.innerHeight / 2 );
 
 		this.scene = new THREE.Scene();
 	
