@@ -2,8 +2,8 @@ import * as THREE from 'three';
 
 import MouseInput from './mouseInput.js';
 
-import fsQuadVert from '../shaders/fullscreen_quad.vs';
-import fsQuadFrag from '../shaders/fullscreen_quad.fs';
+import FullscreenQuad from './fullscreenquad.js';
+import Chasers from './chasers.js';
 
 
 export default class App
@@ -12,12 +12,12 @@ export default class App
 	constructor()
 	{
 
-		this.mouse = new MouseInput( window.innerWidth / 2, window.innerHeight / 2 );
+		this.mouse = new MouseInput( window.innerWidth / 4, window.innerHeight / 2 );
 
 		this.scene = new THREE.Scene();
 	
 		this.camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 1000 );
-		this.camera.position.z = 1.2;
+		this.camera.position.z = 60;
 		
 		this.renderer = new THREE.WebGLRenderer();
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
@@ -34,15 +34,22 @@ export default class App
 
 	
 
-	handleResize( evt )
+	handleResize()
 	{
 
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
 		this.camera.aspect = window.innerWidth / window.innerHeight;
 		this.camera.updateProjectionMatrix();
 
-		this.quadMaterial.uniforms.resolution.value.x = window.innerWidth;
-		this.quadMaterial.uniforms.resolution.value.y = window.innerHeight;
+		if( this.quad )
+		{
+			this.quad.handleResize();
+		}
+
+		if( this.chasers )
+		{
+			this.chasers.handleResize();
+		}
 
 	}
 
@@ -52,57 +59,49 @@ export default class App
 		this.dirLightTarget = new THREE.Object3D();
 		this.scene.add( this.dirLightTarget );
 
-		this.dirLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+		this.dirLight = new THREE.DirectionalLight( 0xffffff, 0.7 );
 		this.dirLight.target = this.dirLightTarget;
+		this.dirLight.position.set( 16, 12, 10 );
+		this.dirLight.castShadow = true;
+		this.dirLight.shadow.mapSize.width = 512;
+		this.dirLight.shadow.mapSize.height = 512;
+		this.dirLight.shadow.camera.near = 0.5;
+		this.dirLight.shadow.camera.far = 100;
 		this.scene.add( this.dirLight );
+
+		this.pointLightA = new THREE.PointLight( 0xf5c542, 1.5, 50 );
+		this.pointLightA.position.set( -20, -10, 0 );
+		this.scene.add( this.pointLightA );
+
+		this.pointLightB = new THREE.PointLight( 0x85f5ff, 3, 50 );
+		this.pointLightB.position.set( 20, 15, 2 );
+		this.scene.add( this.pointLightB );
 
 	}
 
 	createGeo()
 	{
-		
-		this.quadGeo = new THREE.PlaneGeometry( 2, 2 );
-		this.quadGeo.faceVertexUvs[0] = [];
-		this.quadGeo.faceVertexUvs[0][0] = [
-			new THREE.Vector2( 0, 0 ),
-			new THREE.Vector2( 1, 0 ),
-			new THREE.Vector2( 0, 1 )
-		];
-		this.quadGeo.faceVertexUvs[0][1] = [
-			new THREE.Vector2( 1, 0 ),
-			new THREE.Vector2( 1, 1 ),
-			new THREE.Vector2( 0, 1 )
-		];
 
-		this.uniforms = {
-			time: { type: 'f', value: 0.0 },
-			multi: { type: 'f', value: 5.0 },
-			resolution: { type: 'v2', value: new THREE.Vector2( this.renderer.domElement.width, this.renderer.domElement.height ) },
-			mouse: { type: 'v2', value: new THREE.Vector2() }
-		};
-
-		this.quadMaterial = new THREE.ShaderMaterial({
-			uniforms: this.uniforms, 
-			vertexShader: fsQuadVert, 
-			fragmentShader: fsQuadFrag,
-			depthWrite: false,
-			depthTest: false
-		});
+		this.chasers = new Chasers();
+		this.scene.add( this.chasers );
 		
-		this.quad = new THREE.Mesh( this.quadGeo, this.quadMaterial );
-		this.scene.add( this.quad );
+		//this.quad = new FullscreenQuad();
+		//this.scene.add( this.quad );
 
 	}
 
 	update()
 	{
 
-		var time = performance.now() / 1000;
-		this.quadMaterial.uniforms.time.value = time;
-		this.quadMaterial.uniforms.multi.value = ( this.mouse.x / window.innerWidth ) * 150.0;
+		if( this.quad )
+		{
+			this.quad.update( this.mouse );
+		}
 
-		this.quadMaterial.uniforms.mouse.value.x = this.mouse.x;
-		this.quadMaterial.uniforms.mouse.value.y = this.mouse.y;
+		if( this.chasers )
+		{
+			this.chasers.update( this.mouse );
+		}
 
 		this.renderer.render( this.scene, this.camera );
 
