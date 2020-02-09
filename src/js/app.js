@@ -1,7 +1,7 @@
 import fsQuadVert from '../shaders/fullscreen_quad.vs';
 import fsQuadFrag from '../shaders/fullscreen_quad.fs';
 
-import MouseInput from 'mouseInput.js';
+import MouseInput from './mouseInput.js';
 
 
 export default class App
@@ -101,8 +101,8 @@ export default class App
 		this.quadMaterial.uniforms.time.value = time;
 		this.quadMaterial.uniforms.multi.value = ( this.mouse.x / window.innerWidth ) * 150.0;
 
-		this.quadMatrial.uniforms.mouse.value.x = this.mouse.x;
-		this.quadMatrial.uniforms.mouse.value.y = this.mouse.y;
+		this.quadMaterial.uniforms.mouse.value.x = this.mouse.x;
+		this.quadMaterial.uniforms.mouse.value.y = this.mouse.y;
 
 		this.renderer.render( this.scene, this.camera );
 

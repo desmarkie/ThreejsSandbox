@@ -9,8 +9,8 @@ export default class MouseInput
 		this.mouseDown = false;
 
 		document.onmousemove = this.handleMouseMove.bind( this );
-		document.mousedown = this.handleMouseDown.bind( this );
-		document.mouseup = this.handleMouseUp.bind( this );
+		document.onmousedown = this.handleMouseDown.bind( this );
+		document.onmouseup = this.handleMouseUp.bind( this );
 
 	}
 
@@ -33,9 +33,6 @@ export default class MouseInput
 
 		this.x = evt.pageX;
 		this.y = evt.pageY;
-
-		// this.quadMaterial.uniforms.mouse.value.x = this.mousePos.x;
-		// this.quadMaterial.uniforms.mouse.value.y = this.mousePos.y;
 
 	}
 

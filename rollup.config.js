@@ -29,12 +29,11 @@ export default {
 		nodeResolve({
 			modulesOnly: true
 		}),
-		commonjs({
-			exclude: "node_modules/**",
-			ignoreGlobal: true
-		}),
 		babel({
 			extensions: [".js"],
+			exclude: "node_modules/**"
+		}),
+		commonjs({
 			exclude: "node_modules/**"
 		}),
 		copy({
