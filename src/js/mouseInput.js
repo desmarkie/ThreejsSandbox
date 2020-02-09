@@ -1,4 +1,4 @@
-class MouseInput
+export default class MouseInput
 {
 
 	constructor( x = 0, y = 0 )
@@ -40,5 +40,3 @@ class MouseInput
 	}
 
 }
-
-export { MouseInput as default };
