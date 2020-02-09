@@ -1,5 +1,6 @@
-import babel from 'rollup-plugin-babel'
 import nodeResolve from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
+import babel from 'rollup-plugin-babel'
 import serve from 'rollup-plugin-serve'
 import livereload from 'rollup-plugin-livereload'
 import glslify from 'rollup-plugin-glslify'
@@ -17,20 +18,24 @@ export default {
 		glslify({
 			basedir: 'src/shaders',
 			include: [
-				'/.vs',
-				'/.fs',
-				'/.vert',
-				'/.frag',
-				'/.glsl'
+				'**/*.vs',
+				'**/*.fs',
+				'**/*.vert',
+				'**/*.frag',
+				'**/*.glsl'
 			],
 			exclude: 'node_modules/**'
-		}),
-		babel({
-			exclude: "node_modules/**"
 		}),
 		nodeResolve({
 			jsnext: true,
 			main: true
+		}),
+		commonjs({
+			exclude: "node_modules/**"
+		}),
+		babel({
+			extensions: [".js"],
+			exclude: "node_modules/**"
 		}),
 		copy({
 			targets: [
