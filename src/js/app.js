@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
-import MouseInput from './mouseInput.js';
+import MouseInput from './utils/mouseInput.js';
 
-import FullscreenQuad from './fullscreenquad.js';
-import Chasers from './chasers.js';
+import FullscreenQuad from './sketches/fullscreenquad.js';
+import Chasers from './sketches/chasers.js';
 
 
 export default class App
@@ -12,6 +12,17 @@ export default class App
 	constructor()
 	{
 
+		// sketch selection
+		this.sketches = [
+			FullscreenQuad,
+			Chasers
+		];
+
+		var urlParms = new URLSearchParams( window.location.search );
+		this.selection = urlParms.get( 'sketch' ) | 0;
+		if( this.selection >= this.sketches.length ) this.selection = this.sketches.length - 1;
+
+		// three init
 		this.mouse = new MouseInput( window.innerWidth / 4, window.innerHeight / 2 );
 
 		this.scene = new THREE.Scene();
@@ -23,16 +34,14 @@ export default class App
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
 		document.body.appendChild( this.renderer.domElement );
 
-		this.createGeo();
-		this.createLights();
+		this.createSketch();
 
+		// events
 		window.onresize = this.handleResize.bind( this );
 
 		requestAnimationFrame( this.update.bind( this ) );
 
 	}
-
-	
 
 	handleResize()
 	{
@@ -41,67 +50,22 @@ export default class App
 		this.camera.aspect = window.innerWidth / window.innerHeight;
 		this.camera.updateProjectionMatrix();
 
-		if( this.quad )
-		{
-			this.quad.handleResize();
-		}
-
-		if( this.chasers )
-		{
-			this.chasers.handleResize();
-		}
+		this.sketch.handleResize();
 
 	}
 
-	createLights()
+	createSketch()
 	{
 
-		this.dirLightTarget = new THREE.Object3D();
-		this.scene.add( this.dirLightTarget );
-
-		this.dirLight = new THREE.DirectionalLight( 0xffffff, 0.7 );
-		this.dirLight.target = this.dirLightTarget;
-		this.dirLight.position.set( 16, 12, 10 );
-		this.dirLight.castShadow = true;
-		this.dirLight.shadow.mapSize.width = 512;
-		this.dirLight.shadow.mapSize.height = 512;
-		this.dirLight.shadow.camera.near = 0.5;
-		this.dirLight.shadow.camera.far = 100;
-		this.scene.add( this.dirLight );
-
-		this.pointLightA = new THREE.PointLight( 0xf5c542, 1.5, 50 );
-		this.pointLightA.position.set( -20, -10, 0 );
-		this.scene.add( this.pointLightA );
-
-		this.pointLightB = new THREE.PointLight( 0x85f5ff, 3, 50 );
-		this.pointLightB.position.set( 20, 15, 2 );
-		this.scene.add( this.pointLightB );
-
-	}
-
-	createGeo()
-	{
-
-		this.chasers = new Chasers();
-		this.scene.add( this.chasers );
-		
-		//this.quad = new FullscreenQuad();
-		//this.scene.add( this.quad );
+		this.sketch = new this.sketches[ this.selection ];
+		this.scene.add( this.sketch );
 
 	}
 
 	update()
 	{
 
-		if( this.quad )
-		{
-			this.quad.update( this.mouse );
-		}
-
-		if( this.chasers )
-		{
-			this.chasers.update( this.mouse );
-		}
+		this.sketch.update( this.mouse );
 
 		this.renderer.render( this.scene, this.camera );
 
