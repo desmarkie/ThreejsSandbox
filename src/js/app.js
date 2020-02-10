@@ -4,7 +4,7 @@ import MouseInput from './utils/mouseInput.js';
 
 import FullscreenQuad from './sketches/fullscreenquad.js';
 import Chasers from './sketches/chasers.js';
-
+import BasicFBO from './sketches/basicfbo.js';
 
 export default class App
 {
@@ -15,7 +15,8 @@ export default class App
 		// sketch selection
 		this.sketches = [
 			FullscreenQuad,
-			Chasers
+			Chasers,
+			BasicFBO
 		];
 
 		var urlParms = new URLSearchParams( window.location.search );
@@ -50,22 +51,39 @@ export default class App
 		this.camera.aspect = window.innerWidth / window.innerHeight;
 		this.camera.updateProjectionMatrix();
 
-		this.sketch.handleResize();
+		if( this.sketch ) this.sketch.handleResize();
 
 	}
 
 	createSketch()
 	{
 
-		this.sketch = new this.sketches[ this.selection ];
+		var sketchName = this.sketches[ this.selection ];
+		if( sketchName.needsFBO && !this.canUseFBO() )
+		{
+			console.warn("FBO CHECK FAILED");
+			return;
+		}
+
+		this.sketch = new sketchName( this.camera, this.renderer );
 		this.scene.add( this.sketch );
 
+	}
+
+	canUseFBO()
+	{
+		var gl = this.renderer.getContext();
+		if (!gl.getExtension('OES_texture_float') ||
+		     gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS) == 0) {
+		  return false;
+		}
+		return true;
 	}
 
 	update()
 	{
 
-		this.sketch.update( this.mouse );
+		if( this.sketch ) this.sketch.update( this.mouse );
 
 		this.renderer.render( this.scene, this.camera );
 
