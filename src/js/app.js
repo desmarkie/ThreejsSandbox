@@ -5,6 +5,7 @@ import MouseInput from './utils/mouseInput.js';
 import FullscreenQuad from './sketches/fullscreenquad.js';
 import Chasers from './sketches/chasers.js';
 import BasicFBO from './sketches/basicfbo.js';
+import GPGPU001 from './sketches/gpgpu001.js';
 
 export default class App
 {
@@ -16,11 +17,12 @@ export default class App
 		this.sketches = [
 			FullscreenQuad,
 			Chasers,
-			BasicFBO
+			BasicFBO,
+			GPGPU001
 		];
 
 		var urlParms = new URLSearchParams( window.location.search );
-		this.selection = urlParms.get( 'sketch' ) | 0;
+		this.selection = urlParms.get( 'sketch' ) | this.sketches.length - 1;
 		if( this.selection >= this.sketches.length ) this.selection = this.sketches.length - 1;
 
 		// three init
