@@ -16,7 +16,7 @@ export default class BasicFBO extends THREE.Object3D
 		// https://stackoverflow.com/a/56159080
 
 		this.renderer = renderer;
-		camera.position.set( 0.0, 0.0, 5.0 );
+		camera.position.set( -0.5, -0.5, 5.0 );
 
 		this.controls = new OrbitControls( camera, this.renderer.domElement );
 
@@ -29,9 +29,11 @@ export default class BasicFBO extends THREE.Object3D
 		{ 
 			for( var y = 0; y < this.h; y++ ) 
 			{
-				data[ i ] 	  = x / this.w;
-				data[ i + 1 ] = y / this.h;
+				data[ i ] 	  = ( x / this.w ) * 1.1;
+				data[ i + 1 ] = ( y / this.h ) * 1.1;
 				data[ i + 2 ] = 0;
+
+				i += 3;
 			}
 		}
 
@@ -54,7 +56,8 @@ export default class BasicFBO extends THREE.Object3D
 		// delete dataTex; it isn't used after initializing point positions
 		dataTex = null;
 
-		var FBO = function(w, simMat) {
+		var FBO = function( w, simMat ) 
+		{
 			this.scene = new THREE.Scene();
 			this.camera = new THREE.OrthographicCamera( -w / 2, w / 2, w / 2, -w / 2, -1, 1 );
 			this.scene.add( new THREE.Mesh( new THREE.PlaneGeometry( w, w ), simMat ) );
@@ -89,7 +92,7 @@ export default class BasicFBO extends THREE.Object3D
 		// position data within the positional texture; must be scaled 0:1!
 		this.geo = new THREE.BufferGeometry();
 		this.arr = new Float32Array( this.w * this.h * 3 );
-		for( i = 0; i < this.arr.length; i++ ) 
+		for( i = 0; i < this.arr.length; i += 3 ) 
 		{
 			this.arr[ i ] 	= ( i % this.w ) / this.w;
 			this.arr[ i + 1 ] = Math.floor( i / this.w ) / this.h;
