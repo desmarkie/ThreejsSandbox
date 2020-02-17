@@ -1,15 +1,19 @@
 #include <common>
 
 #define delta ( 1.0 / 60.0 )
-#define maxSpeed 12.0
+
+#pragma glslify: curlnoise = require(glsl-curl-noise)
 
 uniform float gravity;
+uniform vec3 mousePosition;
 
 float random (in vec2 st) 
 {
     return fract( sin( dot( st.xy, vec2( 12.9898, 78.233 ) ) ) * 43758.5453123 );
+
 }
 
+// http://bookofshaders.com
 // 2D Noise based on Morgan McGuire @morgan3d
 // https://www.shadertoy.com/view/4dS3Wd
 float noise (in vec2 st) 
@@ -48,23 +52,42 @@ void main()
 	vec4 tmpVel = texture2D( textureVelocity, uv );
 	vec3 vel = tmpVel.xyz;
 
-	float nx = noise( pos.xy / 7.0 );
-	float ny = noise( pos.yz / 7.0 );
-	float nz = noise( pos.xz / 7.0 );
-	float ax = sin( nx * PI * 2.0 ) * 2.5;
-	float ay = sin( ny * PI * 2.0 ) * 2.5;
-	float az = sin( nz * PI * 2.0 ) * 2.5;
-	vec3 accel = vec3( ax, ay, az );
+	float maxSpeed = tmpVel.a * 48.0 + 8.0;
+	float maxTurn = tmpPos.a * 32.0 + 8.0;
 
-	accel += pos * -1.2;
+	vec3 n = curlnoise( pos * 60.0 );
+	// float nx = noise( pos.xy / 7.0 );
+	// float ny = noise( pos.yz / 7.0 );
+	// float nz = noise( pos.xz / 7.0 );
+	float ax = sin( n.x * PI * 2.0 );// * 2.5;
+	float ay = sin( n.y * PI * 2.0 );// * 2.5;
+	float az = sin( n.z * PI * 2.0 );// * 2.5;
+	vec3 accel = vec3( ax, ay, az );
+	// vec3 accel = vec3( 0.0 );
+
+	//float falloff = clamp( distance( mousePosition, pos ) / 10.0, 0.0, 1.0 ) * 30.0;
+	vec3 toMouse = ( mousePosition - pos );
+	// if( falloff < 0.1 ) toMouse *= -1.0;
+	accel += toMouse;
+
+	float cap = min( maxTurn, length( toMouse ) * 1.3 );	
+	if( length( accel ) > cap )
+	{
+
+		accel = normalize( accel ) * maxTurn;
+
+	}
 
 	vel += delta * accel;
 
-	if( length( vel ) > maxSpeed)
+	// maxSpeed *= falloff;
+	// maxSpeed += 0.3;
+	cap = min( maxSpeed, length( toMouse ) * 3.0 );
+	if( length( vel ) > cap )
 	{
-		vel = normalize( vel ) * maxSpeed;
+		vel = normalize( vel ) * cap;
 	}
 
-	gl_FragColor = vec4( vel, 1.0 );
+	gl_FragColor = vec4( vel, tmpVel.a );
 
 }

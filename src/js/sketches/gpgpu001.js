@@ -16,8 +16,7 @@ export default class GPGPU001 extends THREE.Object3D
 		super();
 
 		this.renderer = renderer;
-
-		//camera.position.set( 0.0, 0.0, 5.0 );
+		
 
 		this.controls = new OrbitControls( camera, this.renderer.domElement );
 
@@ -25,7 +24,7 @@ export default class GPGPU001 extends THREE.Object3D
 		var isEdge = /Edge/i.test( navigator.userAgent );
 
 		// Texture width for simulation (each texel is a debris particle)
-		this.textureWidth = ( isIE || isEdge ) ? 4 : 512;
+		this.textureWidth = ( isIE || isEdge ) ? 4 : 256;
 
 		this.points = this.textureWidth * this.textureWidth;
 
@@ -54,6 +53,7 @@ export default class GPGPU001 extends THREE.Object3D
 		this.velUniforms = this.velVar.material.uniforms;
 
 		this.velUniforms[ 'gravity' ] = { value: 0.0 };
+		this.velUniforms[ 'mousePosition' ] = { value: new THREE.Vector3() };
 
 		var error = this.gpuCompute.init();
 
@@ -107,7 +107,8 @@ export default class GPGPU001 extends THREE.Object3D
 		this.particleUniforms = {
 			'texturePosition': { value: null },
 			'textureVelocity': { value: null },
-			'cameraConstant': { value: this.getCameraConstant( camera ) }
+			'cameraConstant': { value: this.getCameraConstant( camera ) },
+			'time': { value: 0 }
 		};
 
 		var material = new THREE.ShaderMaterial({
@@ -143,15 +144,18 @@ export default class GPGPU001 extends THREE.Object3D
 			var y = ( ( i / this.textureWidth ) / this.textureWidth ) * rad;
 			var z = 0;
 
+			x -= this.textureWidth / 60.0;
+			y -= this.textureWidth / 60.0;
+
 			posArr[ k ] 	= x;
 			posArr[ k + 1 ] = y;
 			posArr[ k + 2 ] = z;
-			posArr[ k + 3 ] = 1;
+			posArr[ k + 3 ] = Math.random();
 
 			velArr[ k ] 	= 0;
 			velArr[ k + 1 ] = 0;
 			velArr[ k + 2 ] = 0;
-			velArr[ k + 3 ] = 1;
+			velArr[ k + 3 ] = Math.random();
 
 			k += 4;
 
@@ -171,13 +175,16 @@ export default class GPGPU001 extends THREE.Object3D
 
 	}
 
-	update()
+	update( mouse )
 	{
+
+		this.velUniforms[ 'mousePosition' ].value = mouse.mouseToZPlane;
 
 		this.gpuCompute.compute();
 
 		this.particleUniforms[ "texturePosition" ].value = this.gpuCompute.getCurrentRenderTarget( this.posVar ).texture;
 		this.particleUniforms[ "textureVelocity" ].value = this.gpuCompute.getCurrentRenderTarget( this.velVar ).texture;
+		this.particleUniforms[ "time" ].value = performance.now();
 
 	}
 

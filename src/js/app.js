@@ -40,6 +40,8 @@ export default class App
 
 		this.createSketch();
 
+		// this.addMouseDebug();
+
 		// events
 		window.onresize = this.handleResize.bind( this );
 
@@ -86,11 +88,50 @@ export default class App
 	update()
 	{
 
+		this.mouse.mouseToZPlane = this.projectMouseToZPlane();
+
+
 		if( this.sketch ) this.sketch.update( this.mouse );
+
+		if( this.mouseDebug ) this.mouseDebug.position.copy( this.mouse.mouseToZPlane );
 
 		this.renderer.render( this.scene, this.camera );
 
 		requestAnimationFrame( this.update.bind( this ) );
+
+	}
+
+	// https://stackoverflow.com/a/13091694
+	projectMouseToZPlane()
+	{
+
+		var vec = new THREE.Vector3();
+		var pos = new THREE.Vector3();
+
+		vec.set(
+		    ( this.mouse.x / window.innerWidth ) * 2 - 1,
+		    - ( this.mouse.y / window.innerHeight ) * 2 + 1,
+		    0.5 );
+
+		vec.unproject( this.camera );
+
+		vec.sub( this.camera.position ).normalize();
+
+		var distance = -this.camera.position.z / vec.z;
+
+		return pos.copy( this.camera.position ).add( vec.multiplyScalar( distance ) );
+
+	}
+
+	addMouseDebug()
+	{
+
+		this.mouseDebug = new THREE.Mesh( 
+			new THREE.SphereGeometry( 1, 6, 6 ), 
+			new THREE.MeshBasicMaterial( { color: 0xff0000 } ) 
+		);
+
+		this.scene.add( this.mouseDebug );
 
 	}
 

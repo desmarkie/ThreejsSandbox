@@ -29,5 +29,8 @@
 		"rollup-plugin-serve": "",
 		"three": ""
 	},
-	"dependencies": {}
+	"dependencies": {
+		"glsl-curl-noise": "0.0.4",
+		"glsl-noise": "0.0.0"
+	}
 }
