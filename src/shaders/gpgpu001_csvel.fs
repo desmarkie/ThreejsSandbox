@@ -80,8 +80,6 @@ void main()
 
 	vel += delta * accel;
 
-	// maxSpeed *= falloff;
-	// maxSpeed += 0.3;
 	cap = min( maxSpeed, length( toMouse ) * 3.0 );
 	if( length( vel ) > cap )
 	{

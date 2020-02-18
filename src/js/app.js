@@ -6,6 +6,7 @@ import FullscreenQuad from './sketches/fullscreenquad.js';
 import Chasers from './sketches/chasers.js';
 import BasicFBO from './sketches/basicfbo.js';
 import GPGPU001 from './sketches/gpgpu001.js';
+import GPGPU002 from './sketches/gpgpu002.js';
 
 export default class App
 {
@@ -18,7 +19,8 @@ export default class App
 			FullscreenQuad,
 			Chasers,
 			BasicFBO,
-			GPGPU001
+			GPGPU001,
+			GPGPU002
 		];
 
 		var urlParms = new URLSearchParams( window.location.search );
