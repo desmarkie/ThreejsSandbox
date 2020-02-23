@@ -26,7 +26,8 @@ export default class GPGPU002 extends THREE.Object3D
 		var isEdge = /Edge/i.test( navigator.userAgent );
 
 		// Texture width for simulation (each texel is a debris particle)
-		this.textureWidth = ( isIE || isEdge ) ? 4 : 256;
+		this.textureWidth = ( isIE || isEdge ) ? 4 : 128;
+		this.pointScale = 0.65;
 
 		this.points = this.textureWidth * this.textureWidth;
 
@@ -86,7 +87,8 @@ export default class GPGPU002 extends THREE.Object3D
 			'textureVelocity': { value: null },
 			'cameraConstant': { value: this.getCameraConstant( camera ) },
 			'time': { value: 0 },
-			'map': this.particleTexture
+			'map': this.particleTexture,
+			'pointScale': { value: this.pointScale }
 		};
 
 		var material = new THREE.ShaderMaterial({
@@ -119,11 +121,11 @@ export default class GPGPU002 extends THREE.Object3D
 		{
 
 			// pos
-			var i = ( k / 4 );
+			var i = Math.floor( k / 4 );
 			var x = ( ( i % this.textureWidth ) / this.textureWidth ) * rad;
-			var y = ( ( i / this.textureWidth ) / this.textureWidth ) * rad;
+			var y = ( Math.floor( i / this.textureWidth ) / this.textureWidth ) * rad;
 			var z = 0;
-
+			
 			x -= this.textureWidth / 60.0;
 			y -= this.textureWidth / 60.0;
 
@@ -136,8 +138,6 @@ export default class GPGPU002 extends THREE.Object3D
 			velArr[ k + 1 ] = 0;
 			velArr[ k + 2 ] = 0;
 			velArr[ k + 3 ] = Math.random();
-
-			k += 4;
 
 		}
 
@@ -160,6 +160,11 @@ export default class GPGPU002 extends THREE.Object3D
 		this.quadUniforms[ "texturePosition" ].value = this.gpuCompute.getCurrentRenderTarget( this.posVar ).texture;
 		this.quadUniforms[ "textureVelocity" ].value = this.gpuCompute.getCurrentRenderTarget( this.velVar ).texture;
 		this.quadUniforms[ "time" ].value = performance.now();
+
+	}
+
+	handleResize()
+	{
 
 	}
 

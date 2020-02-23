@@ -10,8 +10,6 @@ export default class GPGPUQuadBufferGeometry extends THREE.BufferGeometry
 		var triangles = quadCount * 2;
 		var points = triangles * 3;
 
-		console.log( textureWidth, quadCount, triangles, points, points * 3 );
-
 		super();
 
 
@@ -23,7 +21,7 @@ export default class GPGPUQuadBufferGeometry extends THREE.BufferGeometry
 		this.setAttribute( 'reference', refs );
 		this.setAttribute( 'iuv', uvs );
 
-		this.v = 0;
+		this.vert = 0;
 		this.uv = 0;
 
 		for( var quad = 0; quad < quadCount; quad++ )
@@ -68,7 +66,7 @@ export default class GPGPUQuadBufferGeometry extends THREE.BufferGeometry
 
 			refs.array[ v * 2 ] = x + 0.01;
 			refs.array[ v * 2 + 1 ] = y + 0.01;
-			// console.log( v, x + 0.01, y + 0.01 );
+			
 			//quadVerts.array[ v ] = v % 9;
 
 		}
@@ -83,8 +81,8 @@ export default class GPGPUQuadBufferGeometry extends THREE.BufferGeometry
 		for( var i = 0; i < vals.length; i++ )
 		{
 
-			this.verts.array[ this.v ] = vals[ i ];
-			this.v++;
+			this.verts.array[ this.vert ] = vals[ i ];
+			this.vert++;
 
 		}
 
