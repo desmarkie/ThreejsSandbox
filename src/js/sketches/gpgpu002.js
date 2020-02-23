@@ -19,6 +19,7 @@ export default class GPGPU002 extends THREE.Object3D
 
 		this.camera = camera;
 		this.renderer = renderer;
+		// renderer.setClearColor( 0xC3C3C3 );
 
 		this.controls = new OrbitControls( camera, this.renderer.domElement );
 
@@ -31,17 +32,21 @@ export default class GPGPU002 extends THREE.Object3D
 
 		this.points = this.textureWidth * this.textureWidth;
 
+		this.isReady = false;
+
 		this.initCompute();
 
 		// particle_001.png
 		var loader = new THREE.TextureLoader();
 		this.particleTexture = loader.load( 
 			
-			'assets/textures/particle_001.png'
+			'assets/textures/particle_001.png',
+
+			this.initParticles.bind( this )
 
 		);
 
-		this.initParticles( camera );
+		//this.initParticles( camera );
 
 	}
 
@@ -49,6 +54,8 @@ export default class GPGPU002 extends THREE.Object3D
 
 	initCompute()
 	{
+
+		
 
 		this.gpuCompute = new GPUComputationRenderer( this.textureWidth, this.textureWidth, this.renderer );
 
@@ -77,17 +84,19 @@ export default class GPGPU002 extends THREE.Object3D
 
 	}
 
-	initParticles( camera )
+	initParticles()
 	{
+
+		console.log( "INIT PARTICLES " );
 
 		var geometry = new GPGPUQuadBufferGeometry( this.textureWidth );
 
 		this.quadUniforms = {
 			'texturePosition': { value: null },
 			'textureVelocity': { value: null },
-			'cameraConstant': { value: this.getCameraConstant( camera ) },
+			'cameraConstant': { value: this.getCameraConstant( this.camera ) },
 			'time': { value: 0 },
-			'map': this.particleTexture,
+			'map': { value: this.particleTexture },
 			'pointScale': { value: this.pointScale }
 		};
 
@@ -107,6 +116,8 @@ export default class GPGPU002 extends THREE.Object3D
 
 		this.add( quads );
 
+		this.isReady = true;
+
 	}
 
 	fillTextures( posTex, velTex )
@@ -124,7 +135,7 @@ export default class GPGPU002 extends THREE.Object3D
 			var i = Math.floor( k / 4 );
 			var x = ( ( i % this.textureWidth ) / this.textureWidth ) * rad;
 			var y = ( Math.floor( i / this.textureWidth ) / this.textureWidth ) * rad;
-			var z = 0;
+			var z = Math.random() * 20;
 			
 			x -= this.textureWidth / 60.0;
 			y -= this.textureWidth / 60.0;
@@ -152,6 +163,8 @@ export default class GPGPU002 extends THREE.Object3D
 
 	update( mouse )
 	{
+
+		if( !this.isReady ) return;
 
 		this.velUniforms[ 'mousePosition' ].value = mouse.mouseToZPlane;
 

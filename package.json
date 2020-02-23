@@ -11,7 +11,7 @@
 		"node": ">=13.7.0"
 	},
 	"scripts": {
-		"build": "rollup -c",
+		"build": "rollup -c --config rollup.config.build.js",
 		"watch": "rollup -c -w"
 	},
 	"devDependencies": {

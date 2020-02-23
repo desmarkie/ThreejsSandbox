@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
 import MouseInput from './utils/mouseInput.js';
+import SketchSelection from './utils/sketchselection.js';
 
 import FullscreenQuad from './sketches/fullscreenquad.js';
 import Chasers from './sketches/chasers.js';
@@ -23,8 +24,10 @@ export default class App
 			GPGPU002
 		];
 
+		this.sketchSelection = new SketchSelection( this.sketches );
+
 		var urlParms = new URLSearchParams( window.location.search );
-		this.selection = urlParms.get( 'sketch' ) | this.sketches.length - 1;
+		this.selection = urlParms.get( 'sketch' ) || this.sketches.length - 1;
 		if( this.selection >= this.sketches.length ) this.selection = this.sketches.length - 1;
 
 		// three init
