@@ -87,8 +87,6 @@ export default class GPGPU002 extends THREE.Object3D
 	initParticles()
 	{
 
-		console.log( "INIT PARTICLES " );
-
 		var geometry = new GPGPUQuadBufferGeometry( this.textureWidth );
 
 		this.quadUniforms = {

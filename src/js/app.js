@@ -8,6 +8,7 @@ import Chasers from './sketches/chasers.js';
 import BasicFBO from './sketches/basicfbo.js';
 import GPGPU001 from './sketches/gpgpu001.js';
 import GPGPU002 from './sketches/gpgpu002.js';
+import Growth001 from './sketches/growth001.js';
 
 export default class App
 {
@@ -21,7 +22,8 @@ export default class App
 			Chasers,
 			BasicFBO,
 			GPGPU001,
-			GPGPU002
+			GPGPU002,
+			Growth001
 		];
 
 		this.sketchSelection = new SketchSelection( this.sketches );
