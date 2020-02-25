@@ -2,15 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GPUComputationRenderer } from 'three/examples/jsm/misc/GPUComputationRenderer.js';
 
-import ComputeShaderGrowth from '../../shaders/growth_001_csgrow.fs';
-import ComputeShaderUpdate from '../../shaders/growth_001_csupdate.fs';
-import ComputeShaderPosition from '../../shaders/growth_001_cspos.fs';
-import GrowthFS from '../../shaders/growth_001_outfs.fs';
-import GrowthVS from '../../shaders/growth_001_outvs.vs';
-
-import GPGPULineBufferGeometry from '../utils/gpgpulinebuffergeometry.js'
-
-export default class GPGPU002 extends THREE.Object3D
+export default class Growth001 extends THREE.Object3D
 {
 
 	constructor( camera, renderer )
@@ -23,127 +15,282 @@ export default class GPGPU002 extends THREE.Object3D
 
 		this.controls = new OrbitControls( camera, this.renderer.domElement );
 
-		var isIE = /Trident/i.test( navigator.userAgent );
-		var isEdge = /Edge/i.test( navigator.userAgent );
+		this.pointCount = 4096;
+		// this.pointCount = 1024;
+		// this.pointCount = 128;
+		this.spread = 24;
 
-		this.boxSize = 24;
-
-		// Texture width for simulation (each texel is a debris particle)
-		this.textureWidth = ( isIE || isEdge ) ? 4 : 128;
-		this.pointScale = 0.65;
-
-		this.points = this.textureWidth * this.textureWidth;
+		this.maxDist = 3 * 3;
+		this.maxNeighbours = 6;
+		this.maxBranches = 3;
+		this.rot = new THREE.Vector3( 0, 0, 0 );
 
 		this.initPoints();
 
+		this.setStartPoints();
+
+		this.startGrowing();
+
+		// this.initGeometry();
+
+	}
+
+	startGrowing()
+	{
+
+		this.maxAge = 0;
+		var age = 0;
+
+		while( this.activePoints.length > 0 )
+		{
+
+			var pt = this.points[ this.activePoints[0] ];
+			pt.age = age;
+			this.activePoints.shift();
+			// console.log('activePoints', this.activePoints);
+			this.growPoint( pt, age );
+			// console.log(this.activePoints.length);
+
+		}
+
+		console.log( 'solved' );
+
+		this.parseLines();
+		// this.drawNeighboursRandom();
+
 		this.initGeometry();
 
+		this.addPointGeo();
+
+
 	}
 
-	initPoints()
+	drawNeighboursRandom()
 	{
 
-		this.gpuCompute = new GPUComputationRenderer( this.textureWidth, this.textureWidth, this.renderer );
-
-		var posTexture = this.gpuCompute.createTexture();
-		var tgtTexture = this.gpuCompute.createTexture();
-		var statTexture = this.gpuCompute.createTexture();
-
-		this.fillTextures( posTexture, tgtTexture, statTexture );
-
-		this.groVar = this.gpuCompute.addVariable( 'textureTarget', ComputeShaderGrowth, tgtTexture );
-		this.statVar = this.gpuCompute.addVariable( 'textureStatus', ComputeShaderUpdate, statTexture );
-		this.posVar = this.gpuCompute.addVariable( 'texturePosition', ComputeShaderPosition, posTexture );
-		
-
-		this.gpuCompute.setVariableDependencies( this.groVar, [ this.posVar, this.statVar, this.groVar ] );
-		this.gpuCompute.setVariableDependencies( this.statVar, [ this.posVar, this.statVar, this.groVar ] );
-		this.gpuCompute.setVariableDependencies( this.posVar, [ this.posVar, this.statVar, this.groVar ] );
-
-		var error = this.gpuCompute.init();
-
-		if( error != null )
+		var rand = Math.floor( Math.random() * this.points.length );
+		var pt = this.points[ rand ];
+		console.log( pt.links );
+		for( var i = 0; i < pt.links.length; i++ )
 		{
-			console.warn( error );
+
+			var ptB = this.points[ pt.links[ i ] ];
+
+			this.geoPoints.push( pt.pos );
+			this.geoPoints.push( ptB.pos );
+
 		}
 
 	}
 
-	initGeometry()
+	addPointGeo()
 	{
 
-		var geo = new GPGPULineBufferGeometry( this.textureWidth );
-
-		this.lineUniforms = {
-			'texturePosition': { value: null },
-			'textureTarget': { value: null }
-		}
-
-		var mat = new THREE.ShaderMaterial({
-			uniforms: this.lineUniforms,
-			vertexShader: GrowthVS,
-			fragmentShader: GrowthFS
-		});
-
-		var lines = new THREE.Mesh( geo, mat );
-		lines.matrixAutoUpdate = false;
-		lines.updateMatrix();
-
-		this.add( lines );
-
-	}
-
-	fillTextures( posTex, tgtTex, statTex )
-	{
-
-		var posArr = posTex.image.data;
-		var tgtArr = tgtTex.image.data;
-		var statArr = statTex.image.data;
-
-		var spread = this.boxSize / 2;
-
-		var startPoint = Math.floor( Math.random() * this.points );
-
-		for( var i = 0; i < posArr.length; i += 4 )
+		var pts = [];
+		for( var i = 0; i < this.points.length; i++ )
 		{
 
-			// rgb
-			// random points in a cube ( sorta, but lazily )
-			posArr[ i ] 	= -spread + Math.random() * spread;
-			posArr[ i + 1 ] = -spread + Math.random() * spread;
-			posArr[ i + 2 ] = -spread + Math.random() * spread;
-			// a
-			// point is used
-			posArr[ i + 3 ] = 0;
-
-			// rgb
-			// target pos is aloways 0
-			tgtArr[ i ] 	= 0;
-			tgtArr[ i + 1 ] = 0;
-			tgtArr[ i + 2 ] = 0;
-			// a
-			// point is active
-			tgtArr[ i + 3 ] = 0;
-
-			// point status
-			statArr[ i ] 	 = i == startPoint ? 1 : 0; // point is active
-			statArr[ i + 1 ] = i == startPoint ? 1 : 0; // point is used
-			statArr[ i + 2 ] = 0;
-			statArr[ i + 3 ] = 0;
-
-			// set start point active and used
-			if( i == startPoint )
+			if( this.points[i].used )
 			{
-				posArr[ i + 3 ] = 1;
-				tgtArr[ i + 3 ] = 1;
+				pts.push( this.points[ i ].pos );
+			}
+
+		}
+
+		var geo = new THREE.BufferGeometry().setFromPoints( pts );
+
+		var mat = new THREE.PointsMaterial({color:0xff33cc, size: 0.15});
+
+		var ptsGeo = new THREE.Points( geo, mat );
+		this.add( ptsGeo );
+
+	}
+
+	parseLines()
+	{
+
+		this.links = 0;
+		for( var i = 0; i < this.pointCount; i++ )
+		{
+
+			this.addPointLines( this.points[ i ] );
+
+		}
+		// console.log( this.links, 'links' );
+
+	}
+
+	addPointLines( pt )
+	{
+
+		for( var i = 0; i < pt.links.length; i++ )
+		{
+
+			var ptB = this.points[ pt.links[ i ] ];
+			this.geoPoints.push( pt.pos );
+			this.geoPoints.push( ptB.pos );
+			this.links++;
+
+		}
+
+	}
+
+	growPoint( pt, age )
+	{
+
+
+		var avail = [];
+		for( var i = 0; i < pt.neighbours.length; i++ )
+		{
+			if( !this.points[ pt.neighbours[ i ].pt ].used )
+			{
+				avail.push( pt.neighbours[ i ].pt );
+			}
+		}
+
+		var maxJoins = Math.min( this.maxBranches, avail.length );
+
+		// console.log( 'grow', pt.id, age, maxJoins );
+
+		for( var i = 0; i < maxJoins; i++ )
+		{
+
+			var rand = Math.floor( Math.random() * avail.length );
+			var nextPt = avail[ rand ];
+			if( !this.points[ nextPt ].used )
+			{
+				pt.links.push( nextPt );
+				// pt.neighbours.splice( rand, 1 );
+				
+				this.activePoints.push( nextPt );
+				this.points[ nextPt ].used = true;
+				// console.log( pt.id, 'to', rand );
+
 			}
 
 		}
 
 	}
 
+	setStartPoints()
+	{
+
+		var startPoint = Math.floor( Math.random() * this.pointCount );
+		this.activePoints = [ startPoint ];
+
+	}
+
+	initPoints()
+	{
+
+		this.points = [];
+		this.geoPoints = [];
+
+		var s = this.spread / 2.0;
+		for( var i = 0; i < this.pointCount; i++ )
+		{
+
+			var pos = new THREE.Vector3();
+			pos.x = -s + Math.random() * this.spread;
+			pos.y = -s + Math.random() * this.spread;
+			pos.z = -s + Math.random() * this.spread;
+
+			this.points.push({
+				id: i,
+				pos: pos,
+				used: false,
+				age: 0,
+				neighbours: [],
+				neighbourDist: 9999,
+				links: []
+			});
+
+		}
+
+		// console.log('added', this.points.length);
+
+		for( var i = 0; i < this.pointCount; i++ )
+		{
+			
+			this.findPointNeighbours( this.points[ i ] );
+
+		}
+
+	}
+
+	findPointNeighbours( pt )
+	{
+
+		for( var i = 0; i < this.points.length; i++ )
+		{
+
+			var id = this.points[i].id;
+			if( id != pt.id ) // check yourself
+			{
+				
+				var ptB = this.points[ i ];
+				var distSq = pt.pos.distanceToSquared( ptB.pos );
+				if( distSq < pt.neighbourDist )
+				{
+
+					this.addNeighbour( pt, ptB, distSq );
+
+				}
+
+				// if( distSq < ptB.neighbourDist )
+				// {
+
+				// 	this.addNeighbour( ptB, pt, distSq );
+
+				// }
+
+			}
+
+		}
+
+	}
+
+	// add ptB to ptA as a neighbour
+	addNeighbour( ptA, ptB, dist )
+	{
+
+		ptA.neighbours.push( { pt: ptB.id, dist: dist } );
+		ptA.neighbours.sort(function( a, b ){
+			return a.dist - b.dist;
+		});
+		
+		if( ptA.neighbours.length == this.maxNeighbours )
+		{
+			ptA.neighbours.pop();
+			ptA.neighbourDist = dist;
+		}
+
+		// console.log( ptA.neighbours );
+
+	}
+
+	initGeometry()
+	{
+
+		this.geo = new THREE.BufferGeometry().setFromPoints( this.geoPoints );
+
+		var mat = new THREE.LineBasicMaterial({
+			color: 0x55aaff
+		});
+
+		var lines = new THREE.LineSegments( this.geo, mat );
+		// var lines = new THREE.Line( this.geo, mat );
+		// var lines = new THREE.Mesh( this.geo, mat );
+
+		this.add( lines );
+
+	}
+
 	update( mouse )
 	{
+
+		this.rot.y += 0.01;
+		this.rotation.setFromVector3( this.rot );
 
 	}
 

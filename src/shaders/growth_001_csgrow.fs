@@ -1,4 +1,5 @@
 
+uniform int pointCount;
 
 void main()
 {
@@ -10,7 +11,7 @@ void main()
 	vec2 status = texture2D( textureStatus, uv ).xy;
 
 	vec4 col = vec4( 0.0 );
-	if( status.a < 1.0 )
+	if( status.x < 1.0 )
 	{
 
 		// not active, so just return the same value
@@ -21,20 +22,20 @@ void main()
 	{
 
 		// this point is active, find the nearest N points
-		float ptSpacing = 1.0 / resolution.xy;
-		int ptCount = resolution.x * resolution.y;
+		float ptSpacing = 1.0 / resolution.x;
+		//int ptCount = int(floor(resolution.x * resolution.y));
 
 		float minLen = 10.0;
 
 		// loop through the other points
-		for( int i = 0; i < ptCount; i++ )
+		for( int i = 0; i < pointCount; i++ )
 		{
 
 			// get xy for texture read
-			int x = ( i % resolution.x ) / resolution.x;
-			int y = floor( i / resolution.x ) / resolution.x;
+			int x = int( mod( resolution.x, float(i) ) / resolution.x );
+			int y = int(floor( float(i) / resolution.x ) / resolution.x );
 
-			vec4 tgt = texture2D( texturePosition, vec2( x * ptSpacing, y * ptSpacing ) );
+			vec4 tgt = texture2D( texturePosition, vec2( float(x) * ptSpacing, float(y) * ptSpacing ) );
 
 			// if distance < min so far, update min and output color
 			float dist = length( tgt.xyz - posVals.xyz );
