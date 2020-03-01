@@ -22,7 +22,7 @@ void main()
 	vec4 velTemp = texture2D( textureVelocity, reference );
 	vec3 vel = velTemp.xyz;
 
-	vec3 vertPos = mat3( modelMatrix ) * position * ( 0.5 + abs( sin( ( time / 300.0 ) + velTemp.a * 3.141592 ) ) * pointScale );
+	vec3 vertPos = mat3( modelViewMatrix ) * position * ( 0.5 + abs( sin( ( time / 300.0 ) + velTemp.a * 3.141592 ) ) * pointScale );
 
 	float maxSpeed = velTemp.a * 48.0 + 8.0;
 	vColor = mix( vec4( 1.0, 0.85, 0.6, 1.0 ), vec4( 1.0 - posTemp.a, posTemp.a, 1.0, 1.0 ), length( vel ) / maxSpeed );

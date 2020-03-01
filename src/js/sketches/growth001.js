@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GPUComputationRenderer } from 'three/examples/jsm/misc/GPUComputationRenderer.js';
 
+import LineFS from '../../shaders/growth_lines.fs';
+import LineVS from '../../shaders/growth_lines.vs';
+
 export default class Growth001 extends THREE.Object3D
 {
 
@@ -15,14 +18,14 @@ export default class Growth001 extends THREE.Object3D
 
 		this.controls = new OrbitControls( camera, this.renderer.domElement );
 
-		this.pointCount = 4096;
+		this.pointCount = 1024 * 10;
 		// this.pointCount = 1024;
-		// this.pointCount = 128;
+		// this.pointCount = 512;
 		this.spread = 24;
 
-		this.maxDist = 3 * 3;
-		this.maxNeighbours = 6;
-		this.maxBranches = 3;
+		this.maxDist = Math.pow( 1.3, 2 );
+		this.maxNeighbours = 12;
+		this.maxBranches = 9;
 		this.rot = new THREE.Vector3( 0, 0, 0 );
 
 		this.initPoints();
@@ -39,17 +42,22 @@ export default class Growth001 extends THREE.Object3D
 	{
 
 		this.maxAge = 0;
-		var age = 0;
 
 		while( this.activePoints.length > 0 )
 		{
 
 			var pt = this.points[ this.activePoints[0] ];
-			pt.age = age;
+			//pt.age = age;
 			this.activePoints.shift();
-			// console.log('activePoints', this.activePoints);
-			this.growPoint( pt, age );
-			// console.log(this.activePoints.length);
+			
+			this.growPoint( pt );
+			
+			if( pt.age > this.maxAge )
+			{
+
+				this.maxAge = pt.age;
+
+			}
 
 		}
 
@@ -97,18 +105,21 @@ export default class Growth001 extends THREE.Object3D
 
 		}
 
-		var geo = new THREE.BufferGeometry().setFromPoints( pts );
+		// var geo = new THREE.BufferGeometry().setFromPoints( pts );
+		var geo = new THREE.Geometry().setFromPoints( pts );
+		
 
-		var mat = new THREE.PointsMaterial({color:0xff33cc, size: 0.15});
+		var mat = new THREE.PointsMaterial({ color:0xff33cc, size: 0.075 });
 
-		var ptsGeo = new THREE.Points( geo, mat );
-		this.add( ptsGeo );
+		this.ptsGeo = new THREE.Points( geo, mat );
+		this.add( this.ptsGeo );
 
 	}
 
 	parseLines()
 	{
 
+		this.vertColors = [];
 		this.links = 0;
 		for( var i = 0; i < this.pointCount; i++ )
 		{
@@ -129,15 +140,16 @@ export default class Growth001 extends THREE.Object3D
 			var ptB = this.points[ pt.links[ i ] ];
 			this.geoPoints.push( pt.pos );
 			this.geoPoints.push( ptB.pos );
+			this.vertColors.push( pt.age );
+			this.vertColors.push( ptB.age );
 			this.links++;
 
 		}
 
 	}
 
-	growPoint( pt, age )
+	growPoint( pt )
 	{
-
 
 		var avail = [];
 		for( var i = 0; i < pt.neighbours.length; i++ )
@@ -150,7 +162,6 @@ export default class Growth001 extends THREE.Object3D
 
 		var maxJoins = Math.min( this.maxBranches, avail.length );
 
-		// console.log( 'grow', pt.id, age, maxJoins );
 
 		for( var i = 0; i < maxJoins; i++ )
 		{
@@ -160,11 +171,11 @@ export default class Growth001 extends THREE.Object3D
 			if( !this.points[ nextPt ].used )
 			{
 				pt.links.push( nextPt );
-				// pt.neighbours.splice( rand, 1 );
+				pt.neighbours.splice( rand, 1 );
 				
 				this.activePoints.push( nextPt );
 				this.points[ nextPt ].used = true;
-				// console.log( pt.id, 'to', rand );
+				this.points[ nextPt ].age = pt.age + 1;
 
 			}
 
@@ -201,13 +212,11 @@ export default class Growth001 extends THREE.Object3D
 				used: false,
 				age: 0,
 				neighbours: [],
-				neighbourDist: 9999,
+				neighbourDist: this.maxDist,
 				links: []
 			});
 
 		}
-
-		// console.log('added', this.points.length);
 
 		for( var i = 0; i < this.pointCount; i++ )
 		{
@@ -237,13 +246,6 @@ export default class Growth001 extends THREE.Object3D
 
 				}
 
-				// if( distSq < ptB.neighbourDist )
-				// {
-
-				// 	this.addNeighbour( ptB, pt, distSq );
-
-				// }
-
 			}
 
 		}
@@ -265,31 +267,49 @@ export default class Growth001 extends THREE.Object3D
 			ptA.neighbourDist = dist;
 		}
 
-		// console.log( ptA.neighbours );
-
 	}
 
 	initGeometry()
 	{
 
-		this.geo = new THREE.BufferGeometry().setFromPoints( this.geoPoints );
+		// var geo = new THREE.BufferGeometry().setFromPoints( this.geoPoints );
+		var geo = new THREE.Geometry().setFromPoints( this.geoPoints );
 
-		var mat = new THREE.LineBasicMaterial({
-			color: 0x55aaff
+		var vertInc = 1.0 / this.maxAge;
+
+		for( var i = 0; i < geo.vertices.length; i += 2 )
+		{
+			var val = vertInc * this.vertColors[ i ];
+			var valB = val + vertInc;
+			geo.colors[ i ] = new THREE.Color( val, val, val );
+			geo.colors[ i + 1 ] = new THREE.Color( valB, valB, valB );
+		}
+
+		var uniforms = {
+			'time' : { value: 0 }
+		}
+
+		// var mat = new THREE.LineBasicMaterial({
+		var mat = new THREE.ShaderMaterial({
+			fragmentShader: LineFS,
+			vertexShader: LineVS,
+			uniforms: uniforms,
+			vertexColors: THREE.VertexColors
 		});
 
-		var lines = new THREE.LineSegments( this.geo, mat );
-		// var lines = new THREE.Line( this.geo, mat );
-		// var lines = new THREE.Mesh( this.geo, mat );
+		mat.uniforms = uniforms;
 
-		this.add( lines );
+		this.lines = new THREE.LineSegments( geo, mat );
+
+		this.add( this.lines );
 
 	}
 
 	update( mouse )
 	{
 
-		this.rot.y += 0.01;
+		this.rot.y += 0.005;
+		this.lines.material.uniforms[ 'time' ].value = performance.now();
 		this.rotation.setFromVector3( this.rot );
 
 	}

@@ -28,7 +28,7 @@ export default class GPGPUBoxBufferGeometry extends THREE.BufferGeometry
 		for( var quad = 0; quad < boxCount; quad++ )
 		{
 
-			//bl
+			// front and back quads
 			this.addVerts( [
 				-0.5, -0.5, -0.5,
 				0.5, -0.5, -0.5,
@@ -42,7 +42,6 @@ export default class GPGPUBoxBufferGeometry extends THREE.BufferGeometry
 			uvs.array[ this.uv ++ ] = 1;
 			uvs.array[ this.uv ++ ] = 1;
 
-			//tr
 			this.addVerts( [
 				0.5, 0.5, -0.5,
 				-0.5, 0.5, -0.5,
@@ -69,11 +68,124 @@ export default class GPGPUBoxBufferGeometry extends THREE.BufferGeometry
 			uvs.array[ this.uv ++ ] = 1;
 			uvs.array[ this.uv ++ ] = 1;
 
-			//tr
 			this.addVerts( [
 				0.5, 0.5, 0.5,
 				-0.5, 0.5, 0.5,
 				-0.5, -0.5, 0.5
+			] );
+
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 0;
+
+
+
+
+
+			//left and right quads
+			this.addVerts( [
+				-0.5, -0.5, -0.5,
+				-0.5, -0.5, 0.5,
+				-0.5, 0.5, 0.5
+			] );
+
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 1;
+
+			this.addVerts( [
+				-0.5, 0.5, 0.5,
+				-0.5, 0.5, -0.5,
+				-0.5, -0.5, -0.5
+			] );
+
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 0;
+
+			this.addVerts( [
+				0.5, -0.5, -0.5,
+				0.5, -0.5, 0.5,
+				0.5, 0.5, 0.5
+			] );
+
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 1;
+
+			//tr
+			this.addVerts( [
+				0.5, 0.5, 0.5,
+				0.5, 0.5, -0.5,
+				0.5, -0.5, -0.5
+			] );
+
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 0;
+
+
+
+			// top and bottom
+			this.addVerts( [
+				-0.5, 0.5, -0.5,
+				0.5, 0.5, -0.5,
+				0.5, 0.5, 0.5
+			] );
+
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 1;
+
+			this.addVerts( [
+				0.5, 0.5, 0.5,
+				-0.5, 0.5, 0.5,
+				-0.5, 0.5, -0.5
+			] );
+
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 0;
+
+			this.addVerts( [
+				-0.5, -0.5, -0.5,
+				0.5, -0.5, -0.5,
+				0.5, -0.5, 0.5
+			] );
+
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 0;
+			uvs.array[ this.uv ++ ] = 1;
+			uvs.array[ this.uv ++ ] = 1;
+
+			//tr
+			this.addVerts( [
+				0.5, -0.5, 0.5,
+				-0.5, -0.5, 0.5,
+				-0.5, -0.5, -0.5
 			] );
 
 			uvs.array[ this.uv ++ ] = 1;

@@ -8,6 +8,7 @@ import ParticleVS from '../../shaders/gpugpu002_partvs.vs';
 import ParticleFS from '../../shaders/gpugpu002_partfs.fs';
 
 import GPGPUQuadBufferGeometry from '../utils/gpgpuquadbuffergeometry.js'
+import GPGPUBoxBufferGeometry from '../utils/gpgpuboxbuffergeometry.js'
 
 export default class GPGPU002 extends THREE.Object3D
 {
@@ -27,8 +28,8 @@ export default class GPGPU002 extends THREE.Object3D
 		var isEdge = /Edge/i.test( navigator.userAgent );
 
 		// Texture width for simulation (each texel is a debris particle)
-		this.textureWidth = ( isIE || isEdge ) ? 4 : 128;
-		this.pointScale = 0.65;
+		this.textureWidth = ( isIE || isEdge ) ? 4 : 16;
+		this.pointScale = 1.3;
 
 		this.points = this.textureWidth * this.textureWidth;
 
@@ -87,7 +88,8 @@ export default class GPGPU002 extends THREE.Object3D
 	initParticles()
 	{
 
-		var geometry = new GPGPUQuadBufferGeometry( this.textureWidth );
+		// var geometry = new GPGPUQuadBufferGeometry( this.textureWidth );
+		var geometry = new GPGPUBoxBufferGeometry( this.textureWidth );
 
 		this.quadUniforms = {
 			'texturePosition': { value: null },
